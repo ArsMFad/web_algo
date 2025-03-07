@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cassert>
 
 struct Node
 {
@@ -65,6 +66,25 @@ public:
 private:
     Node *head, *tail;
 };
+
+
+void testLogic()
+{
+    Queue queue;
+    int sampleCount = 100;
+
+    assert(queue.IsEmpty());
+
+    for (int i = 0; i < sampleCount; i++)
+        queue.Enqueue(i);
+
+    assert(!queue.IsEmpty());
+
+    for (int i = 0; i < sampleCount; i++)
+        assert(i == queue.Dequeu());
+    
+    assert(queue.IsEmpty());
+}
 
 
 int main(int argc, const char *argv[]) {
