@@ -20,6 +20,8 @@ public:
     {
     }
 
+    Queue(const Queue &other) = delete; //prohibition of copying
+
     ~Queue()
     {
         while(!IsEmpty())
@@ -62,11 +64,43 @@ public:
     };
 private:
     Node *head, *tail;
-}
-
+};
 
 
 int main(int argc, const char *argv[]) {
+    Queue queue;
 
+    int n = 0;
+    std::cin >> n;
+
+    for (int i = 0; i < n; i++)
+    {
+        int op = 0, val = 0;
+        std::cin >> op >> val;
+
+        switch (op)
+        {
+            case 2:
+            {
+                int tmpVal = queue.Dequeu();
+                if (tmpVal != val)
+                {
+                    std::cout << "NO" << std::endl;
+                    return 0;
+                }
+                break;
+            }
+            case 3:
+            {
+                queue.Enqueue(val);
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    std::cout << "YES" << std::endl;
+    
     return 0;
 }
