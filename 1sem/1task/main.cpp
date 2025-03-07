@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cassert>
+#include <sstream>
 
 struct Node
 {
@@ -87,16 +88,17 @@ void testLogic()
 }
 
 
-int main(int argc, const char *argv[]) {
+void run(std::istream &input, std::ostream &output)
+{
     Queue queue;
 
     int n = 0;
-    std::cin >> n;
+    input >> n;
 
     for (int i = 0; i < n; i++)
     {
         int op = 0, val = 0;
-        std::cin >> op >> val;
+        input >> op >> val;
 
         switch (op)
         {
@@ -105,8 +107,8 @@ int main(int argc, const char *argv[]) {
                 int tmpVal = queue.Dequeu();
                 if (tmpVal != val)
                 {
-                    std::cout << "NO" << std::endl;
-                    return 0;
+                    output << "NO" << std::endl;
+                    return;
                 }
                 break;
             }
@@ -122,5 +124,36 @@ int main(int argc, const char *argv[]) {
 
     std::cout << "YES" << std::endl;
     
+    return;
+}
+
+
+void testQueue()
+{
+    {
+    std::stringstream input, output;
+    input << "3" << std::endl;
+    input << "3 111" << std::endl;
+    input << "2 111" << std::endl;
+    input << "3 222" << std::endl;
+    run(input, output);
+    assert(output.str() == "YES\n");
+    }
+    {
+    std::stringstream input, output;
+    input << "3" << std::endl;
+    input << "3 111" << std::endl;
+    input << "2 222" << std::endl;
+    input << "3 222" << std::endl;
+    run(input, output);
+    assert(output.str() == "NO\n");
+    }
+}
+
+
+int main(int argc, const char *argv[]) {
+    run(std::cin, std::cout);
+
+    //testLogic();
     return 0;
 }
