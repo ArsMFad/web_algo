@@ -35,8 +35,8 @@ int binarySearch( int * array, int left, int right )
 {
     int mid;
 
-    while ( right - left > 1 ) {
-        mid = (left + right) / 2;
+    while ( left < right ) {
+        mid = ( left + right ) / 2;
 
         if ( array[mid] > array[mid + 1] )
             right = mid;
@@ -73,6 +73,8 @@ void run( std::istream &in, std::ostream &out )
 int main( int argc, const char *argv[] )
 {
     run( std::cin, std::cout );
+    //testExponentialSearch();
+    //testBinaerySearch();
     //testLogic();
 
     return 0;
