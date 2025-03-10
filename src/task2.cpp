@@ -31,6 +31,14 @@ std::pair<int, int> exponentialSearch( int * array, int n )
 }
 
 
+void testExponentialSearch()
+{
+    int sampleCount = 100;
+    std::pair<int, int> expResult;
+    
+}
+
+
 int binarySearch( int * array, int left, int right )
 {
     int mid;
@@ -65,6 +73,8 @@ void run( std::istream &in, std::ostream &out )
     borders = exponentialSearch( A, n );
 
     out << binarySearch( A, borders.first, borders.second ) << "\n";
+
+    delete A;
 
     return;
 }
