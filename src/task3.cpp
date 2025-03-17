@@ -12,60 +12,55 @@
 #include <cmath>
 
 
-class Deque
-{
+#include <iostream>
+#include <cassert>
+#include <algorithm>
+
+class Deque {
 public:
     Deque()
-    : buffer( nullptr ), bufferSize( 0 ), actualSize( 0 ), head( -1 ), tail( -1 )
+        : buffer( nullptr ), bufferSize( 0 ), actualSize( 0 ), head( -1 ), tail( -1 )
     {
     }
 
-    Deque( const Deque &other ) = delete; //prohibition of copying
-
     ~Deque()
     {
-        delete [] buffer;
-        buffer = nullptr;
+        delete[] buffer;
     }
 
     void pushFront( int x )
     {
         if( isFull() )
-        {
             upsize();
-            --head;
-            if( head < 0 )
-                head = bufferSize - 1;
-        } else if( isEmpty() )
+
+        if( isEmpty() )
         {
-            upsize();
-        } else {
-            --head;
-            if( head < 0 )
-                head = bufferSize - 1;
+            head = 0;
+            tail = 0;
+        } else
+        {
+            head = ( head - 1 + bufferSize ) % bufferSize;
         }
 
-        ++actualSize;
         buffer[ head ] = x;
+        ++actualSize;
     }
 
-    void pushBack( int x )
-    {
-        if( isFull() ) {
+    void pushBack( int x ) {
+        if(isFull())
             upsize();
-            ++tail;
-            if( tail >= bufferSize )
-                tail = 0;
-        } else if ( isEmpty() ) {
-            upsize();
-        } else {
-            ++tail;
-            if( tail >= bufferSize )
-                tail = 0;
+
+        if( isEmpty() )
+        {
+            head = 0;
+            tail = 0;
+        } else
+        {
+            tail = ( tail + 1 ) % bufferSize;
         }
 
+        buffer[ tail ] = x;
         ++actualSize;
-        buffer[tail] = x;
     }
 
     int popFront()
@@ -74,91 +69,95 @@ public:
             return -1;
 
         int to_ret = buffer[ head ];
-        buffer[ head ] = -1;
 
         --actualSize;
-        ++head;
+        if( isEmpty() )
+        {
+            head = -1;
+            tail = -1;
+        } else {
+            head = ( head + 1 ) % bufferSize;
+        }
 
-        if( head >= bufferSize )
-            head = 0;
-        
         return to_ret;
     }
 
     int popBack()
     {
         if( isEmpty() )
+        {
             return -1;
+        }
 
         int to_ret = buffer[ tail ];
-        buffer[ tail ] = -1;
 
         --actualSize;
-        --tail;
-
-        if( tail < 0 )
-            tail = bufferSize - 1;
+        if( isEmpty() )
+        {
+            head = -1;
+            tail = -1;
+        } else
+        {
+            tail = (tail - 1 + bufferSize) % bufferSize;
+        }
 
         return to_ret;
     }
 
     void upsize()
     {
-        int newBufferSize;
+        int newBufferSize = ( bufferSize == 0 ) ? 2 : bufferSize * 2;
+        newBufferSize = std::min( newBufferSize, 1000000 );
 
-        if( bufferSize == 0 )
+        int* newBuffer = new int[ newBufferSize ];
+
+        if( !isEmpty() )
         {
-            newBufferSize = 10;
+            if( head <= tail )
+            {
+                std::copy( buffer + head, buffer + tail + 1, newBuffer );
+            } else
+            {
+                std::copy( buffer + head, buffer + bufferSize, newBuffer );
+                std::copy( buffer, buffer + tail + 1, newBuffer + ( bufferSize - head ));
+            }
+        }
+
+        delete [] buffer;
+        buffer = newBuffer;
+
+        if( !isEmpty() )
+        {
+            head = 0;
+            tail = actualSize - 1;
         } else
         {
-            newBufferSize *= 2;
-            newBufferSize = std::max( 1000000, newBufferSize );
+            head = -1;
+            tail = -1;
         }
 
-        int *new_buffer = new int [ newBufferSize ];
-
-        int j = 0;
-        for( int i = head; i != tail; i = ( i + 1 ) % bufferSize, ++j )
-        {
-            new_buffer[j] = buffer[i];
-        }
-
-        if( tail != -1 ) {
-            new_buffer[j] = buffer[ tail ];
-        }
-
-
-        delete[] buffer;
-        buffer = nullptr;
-
-        head = 0;
-        if( actualSize == 0 ) tail = 0;
-        else tail = actualSize - 1;
-        
-        buffer = new_buffer;
         bufferSize = newBufferSize;
     }
 
-    void printBuffer()
+    void printBuffer() const
     {
-        for( int i = 0; i < bufferSize; i++ )
+        for( int i = 0; i < bufferSize; ++i )
         {
             std::cout << buffer[i] << " ";
         }
-        
-        std::cout << std::endl << "\n";
+        std::cout << std::endl;
     }
 
-    bool isFull()
+    bool isFull() const
     {
-        return ( actualSize == bufferSize ) && ( actualSize != 0 );
+        return actualSize == bufferSize;
     }
 
-    bool isEmpty()
+    bool isEmpty() const
     {
-        return !actualSize;
+        return actualSize == 0;
     }
-    
+
 private:
     int * buffer;
     int bufferSize;
@@ -167,7 +166,6 @@ private:
     int head;
     int tail;
 };
-
 
 void checkIf( bool x ) {
     if ( x )
@@ -218,33 +216,24 @@ void run( std::istream & in, std::ostream & out )
         out << "NO" << std::endl;
 }
 
-/*
+
 void testLogic() {
     {
         Deque q;
 
         for (int i = 0; i < 1000000; i++)
         {
-            if (i % 100000 == 0) {
-                std::cout << sizeof(q.buffer) << "\n";
-            }
             q.pushBack(1);
         }
-        std::cout << "\n\n";
         
     }
     {
         Deque q;
         q.pushFront(1);
-        q.printBuffer(); // 1
         q.pushFront(2);
-        q.printBuffer(); // 2 1
         q.pushBack(5);
-        q.printBuffer(); // 2 1 5
         q.pushBack(4);
-        q.printBuffer(); // 2 1 5 4
         q.pushFront(3);
-        q.printBuffer(); // 3 2 1 5 4
 
         assert(q.popFront() == 3);
         assert(q.popBack() == 4);
@@ -273,16 +262,11 @@ void testLogic() {
         assert(q.popFront() == -1); // Дек пуст
     }
     {
-        std::cout<<"\n\n\n";
         Deque q;
         q.pushBack(1);
-        q.printBuffer();
         q.pushBack(2);
-        q.printBuffer();
         q.pushFront(3);
-        q.printBuffer();
         q.pushFront(4);
-        q.printBuffer();
         assert(q.popBack() == 2);
         assert(q.popFront() == 4);
         assert(q.popBack() == 1);
@@ -298,12 +282,144 @@ void testLogic() {
         q.pushBack(2);
         assert(q.popFront() == 2);
     }
+    {
+        Deque q;
+        q.pushFront(1);
+        q.pushFront(2);
+        q.pushBack(5);
+        q.pushBack(4);
+        q.pushFront(3);
+
+        assert(q.popFront() == 3);
+        assert(q.popBack() == 4);
+        assert(q.popFront() == 2);
+        assert(q.popBack() == 5);
+        assert(q.popBack() == 1);
+        assert(q.popBack() == -1); // Дек пуст
+        q.pushBack(3);
+        assert(q.popBack() == 3);
+    }
+    {
+        Deque q;
+        q.pushBack(10);
+        assert(q.popFront() == 10);
+    }
+    {
+        Deque q;
+        q.pushFront(1);
+        q.pushFront(2);
+        q.pushBack(3);
+        q.pushBack(4);
+        assert(q.popFront() == 2);
+        assert(q.popBack() == 4);
+        assert(q.popFront() == 1);
+        assert(q.popBack() == 3);
+        assert(q.popFront() == -1); // Дек пуст
+    }
+    {
+        Deque q;
+        q.pushBack(1);
+        q.pushBack(2);
+        q.pushFront(3);
+        q.pushFront(4);
+        assert(q.popBack() == 2);
+        assert(q.popFront() == 4);
+        assert(q.popBack() == 1);
+        assert(q.popFront() == 3);
+        assert(q.popBack() == -1); // Дек пуст
+    }
+    {
+        Deque q;
+        assert(q.popFront() == -1); // Дек пуст
+        assert(q.popBack() == -1);  // Дек пуст
+        q.pushFront(1);
+        assert(q.popBack() == 1);
+        q.pushBack(2);
+        assert(q.popFront() == 2);
+    }
+    {
+        // Тест с большим количеством элементов
+        Deque q;
+        for (int i = 0; i < 101; ++i) {
+            q.pushFront(i);
+        }
+        for (int i = 100; i >= 0; --i) {
+            assert(q.popFront() == i);
+        }
+        assert(q.popFront() == -1); // Дек пуст
+    }
+    {
+        // Тест с чередованием операций
+        Deque q;
+        q.pushBack(1);
+        q.pushFront(2);
+        q.pushBack(3);
+        q.pushFront(4);
+        assert(q.popFront() == 4);
+        assert(q.popBack() == 3);
+        assert(q.popFront() == 2);
+        assert(q.popBack() == 1);
+        assert(q.popFront() == -1); // Дек пуст
+    }
+    {
+        // Тест с множеством операций
+        Deque q;
+        q.pushFront(1);
+        q.pushBack(2);
+        q.pushFront(3);
+        q.pushBack(4);
+        assert(q.popFront() == 3);
+        assert(q.popBack() == 4);
+        q.pushFront(5);
+        q.pushBack(6);
+        assert(q.popFront() == 5);
+        assert(q.popBack() == 6);
+        assert(q.popFront() == 1);
+        assert(q.popBack() == 2);
+        assert(q.popFront() == -1); // Дек пуст
+    }
+    {
+        // Тест с пустым деком после операций
+        Deque q;
+        q.pushFront(1);
+        q.pushBack(2);
+        assert(q.popFront() == 1);
+        assert(q.popBack() == 2);
+        assert(q.popFront() == -1); // Дек пуст
+        assert(q.popBack() == -1);  // Дек пуст
+        q.pushBack(3);
+        assert(q.popFront() == 3);
+    }
+    {
+        // Тест с добавлением и извлечением одного элемента
+        Deque q;
+        q.pushFront(42);
+        assert(q.popBack() == 42);
+        assert(q.popFront() == -1); // Дек пуст
+        q.pushBack(100);
+        assert(q.popFront() == 100);
+        assert(q.popBack() == -1); // Дек пуст
+    }
+    {
+        // Тест с большим количеством операций
+        Deque q;
+        for (int i = 0; i < 10000; ++i) {
+            q.pushFront(i);
+            q.pushBack(i);
+        }
+        for (int i = 9999; i >= 0; --i) {
+            assert(q.popFront() == i);
+            assert(q.popBack() == i);
+        }
+        assert(q.popFront() == -1); // Дек пуст
+        assert(q.popBack() == -1);  // Дек пуст
+    }
 }
-*/
+
 
 int main( int argc, const char *argv[] )
 {
-    run( std::cin, std::cout );
-    //testLogic();
+//    run( std::cin, std::cout );
+    testLogic();
     return 0;
 }
