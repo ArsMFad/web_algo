@@ -46,6 +46,8 @@ public:
 
     int popFront()
     {
+        if (isEmpty()) return -1;
+
         int to_ret = buffer[head];
 
         fullof--;
@@ -57,6 +59,8 @@ public:
 
     int popBack()
     {
+        if (isEmpty()) return -1;
+
         int to_ret = buffer[tail];
         fullof--;
         --tail;
@@ -96,8 +100,14 @@ public:
         std::cout << std::endl << "\n";
     }
 
-    bool isFull() {
+    bool isFull()
+    {
         return fullof > bufferSize;
+    }
+
+    bool isEmpty()
+    {
+        return !fullof;
     }
 private:
     int * buffer;
@@ -109,26 +119,47 @@ private:
 };
 
 
+void checkIf(bool x) {
+    if (x) std::cout << "YES\n";
+    else std::cout << "NO\n";
+}
+
+
 int main(int argc, const char *argv[]) {
     Deque q;
 
-    q.printBuffer();
-    q.pushBack(1);
-    q.printBuffer();
-    q.pushBack(2);
-    q.pushBack(3);
-    q.pushBack(4);
-    q.pushBack(5);
-    q.printBuffer();
-    q.popFront();
-    q.pushFront(6);
-    q.printBuffer();
-    q.pushFront(7);
-    q.printBuffer();
-    q.popBack();
-    q.printBuffer();
-    q.pushBack(10);
-    q.printBuffer();
+    int sampleCounter;
+    int stateOfTask = 1;
+    std::cin >> sampleCounter;
+
+    while(sampleCounter--)
+    {
+        int cmd;
+        int num;
+        std::cin >> cmd >> num;
+
+        switch (cmd)
+        {
+        case 1:
+            q.pushFront(num);
+            break;
+        case 2:
+            if (q.popFront() != num) stateOfTask = 0;
+            break;
+        case 3:
+            q.pushBack(num);
+            break;
+        case 4:
+            if (q.popBack() != num) stateOfTask = 0;
+            break;
+        
+        default:
+            break;
+        }
+    }
+
+    if (stateOfTask) std::cout << "YES" << std::endl;
+    else std::cout << "NO" << std::endl;
 
     return 0;
 }
