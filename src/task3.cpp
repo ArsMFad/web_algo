@@ -15,7 +15,7 @@ class Deque
 {
 public:
     Deque()
-    : buffer(nullptr), bufferSize(0), head(-1), tail(-1)
+    : buffer(nullptr), bufferSize(0), fullof(0), head(-1), tail(-1)
     {
     }
 
@@ -28,27 +28,41 @@ public:
 
     void pushFront(int x)
     {
-        
+        ++fullof;
+        if (isFull()) upsize();
+        head--;
+        if (head < 0) head = bufferSize - 1;
+        buffer[head] = x;
     }
 
     void pushBack(int x)
     {
-        if (tail + 1 == bufferSize) {
-            upsize();
-        }
-        
+        fullof++;
+        if (isFull()) upsize();
         ++tail;
+        if (tail >= bufferSize) tail = 0;
         buffer[tail] = x;
     }
 
     int popFront()
     {
+        int to_ret = buffer[head];
 
+        fullof--;
+        ++head;
+        if (head >= bufferSize) head = 0;
+        
+        return to_ret;
     }
 
     int popBack()
     {
+        int to_ret = buffer[tail];
+        fullof--;
+        --tail;
+        if (tail < 0) tail = bufferSize - 1;
 
+        return to_ret;
     }
 
     void upsize()
@@ -59,6 +73,7 @@ public:
         {
             new_buffer[j] = buffer[i];
         }
+
         if (tail != -1) {
             new_buffer[tail] = buffer[tail];
         }
@@ -80,9 +95,14 @@ public:
         
         std::cout << std::endl << "\n";
     }
+
+    bool isFull() {
+        return fullof > bufferSize;
+    }
 private:
     int * buffer;
     int bufferSize;
+    int fullof;
 
     int head;
     int tail;
@@ -95,19 +115,20 @@ int main(int argc, const char *argv[]) {
     q.printBuffer();
     q.pushBack(1);
     q.printBuffer();
-    q.pushBack(1);
+    q.pushBack(2);
+    q.pushBack(3);
+    q.pushBack(4);
+    q.pushBack(5);
     q.printBuffer();
-    q.pushBack(1);
+    q.popFront();
+    q.pushFront(6);
     q.printBuffer();
-    q.pushBack(1);
+    q.pushFront(7);
     q.printBuffer();
-    q.pushBack(1);
+    q.popBack();
     q.printBuffer();
-    q.pushBack(1);
+    q.pushBack(10);
     q.printBuffer();
-    q.pushBack(1);
-    q.printBuffer();
-    q.pushBack(1);
 
     return 0;
 }
