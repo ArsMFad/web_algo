@@ -23,7 +23,7 @@ public:
 
     ~Deque()
     {
-        if (buffer) delete[] buffer;
+        std::free(buffer);
     }
 
     void pushFront(int x)
@@ -89,7 +89,15 @@ public:
 
     void upsize()
     {
-        int *new_buffer = new int[(bufferSize + 1)*2];
+        int *new_buffer;
+        if (bufferSize == 0)
+        {
+            new_buffer = new int[10];
+        } else
+        {
+            new_buffer = new int[bufferSize + bufferSize];
+        }
+
         int j = 0;
         for (int i = head; i != tail; i = (i + 1) % bufferSize, ++j)
         {
@@ -100,14 +108,17 @@ public:
             new_buffer[j] = buffer[tail];
         }
 
+
+        std::free(buffer);
+        buffer = nullptr;
+
         head = 0;
         if (fullof == 0) tail = 0;
         else tail = fullof - 1;
-
-        delete[] buffer;
-        buffer = new_buffer;
         
-        bufferSize = (bufferSize+1)*2;
+        buffer = new_buffer;
+        if (bufferSize == 0) bufferSize = 10;
+        else bufferSize += bufferSize;
     }
 
     void printBuffer()
@@ -129,9 +140,9 @@ public:
     {
         return !fullof;
     }
-private:
-    int * buffer;
     int bufferSize;
+    int * buffer;
+private:
     int fullof;
 
     int head;
@@ -152,13 +163,13 @@ void run(std::istream & in, std::ostream & out)
 
     int sampleCounter;
     int stateOfTask = 1;
-    std::cin >> sampleCounter;
+    in >> sampleCounter;
 
+    int cmd;
+    int num;
     while(sampleCounter--)
     {
-        int cmd;
-        int num;
-        std::cin >> cmd >> num;
+        in >> cmd >> num;
 
         switch (cmd)
         {
@@ -181,12 +192,25 @@ void run(std::istream & in, std::ostream & out)
         //q.printBuffer();
     }
 
-    if (stateOfTask) std::cout << "YES" << std::endl;
-    else std::cout << "NO" << std::endl;
+    if (stateOfTask) out << "YES" << std::endl;
+    else out << "NO" << std::endl;
 }
 
 
 void testLogic() {
+    {
+        Deque q;
+
+        for (int i = 0; i < 1000000; i++)
+        {
+            if (i % 100000 == 0) {
+                std::cout << sizeof(q.buffer) << "\n";
+            }
+            q.pushBack(1);
+        }
+        std::cout << "\n\n";
+        
+    }
     {
         Deque q;
         q.pushFront(1);
@@ -254,8 +278,9 @@ void testLogic() {
     }
 }
 
+
 int main(int argc, const char *argv[]) {
-    run(std::cin, std::cout);
-    //testLogic();
+    //run(std::cin, std::cout);
+    testLogic();
     return 0;
 }
