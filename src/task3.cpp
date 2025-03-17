@@ -9,121 +9,139 @@
 #include <iostream>
 #include <cassert>
 #include <sstream>
+#include <cmath>
 
 
 class Deque
 {
 public:
     Deque()
-    : buffer(nullptr), bufferSize(0), fullof(0), head(-1), tail(-1)
+    : buffer( nullptr ), bufferSize( 0 ), actualSize( 0 ), head( -1 ), tail( -1 )
     {
     }
 
-    Deque(const Deque &other) = delete; //prohibition of copying
+    Deque( const Deque &other ) = delete; //prohibition of copying
 
     ~Deque()
     {
-        std::free(buffer);
+        delete [] buffer;
+        buffer = nullptr;
     }
 
-    void pushFront(int x)
+    void pushFront( int x )
     {
-        if (isFull())
+        if( isFull() )
         {
             upsize();
-            head--;
-            if (head < 0) head = bufferSize - 1;
-        } else if (isEmpty())
+            --head;
+            if( head < 0 )
+                head = bufferSize - 1;
+        } else if( isEmpty() )
         {
             upsize();
         } else {
             --head;
-            if (head < 0) head = bufferSize - 1;
+            if( head < 0 )
+                head = bufferSize - 1;
         }
-        ++fullof;
-        buffer[head] = x;
+
+        ++actualSize;
+        buffer[ head ] = x;
     }
 
-    void pushBack(int x)
+    void pushBack( int x )
     {
-        if (isFull()) {
+        if( isFull() ) {
             upsize();
             ++tail;
-            if (tail >= bufferSize) tail = 0;
-        } else if (isEmpty()) {
+            if( tail >= bufferSize )
+                tail = 0;
+        } else if ( isEmpty() ) {
             upsize();
         } else {
             ++tail;
-            if (tail >= bufferSize) tail = 0;
+            if( tail >= bufferSize )
+                tail = 0;
         }
-        fullof++;
+
+        ++actualSize;
         buffer[tail] = x;
     }
 
     int popFront()
     {
-        if (isEmpty()) return -1;
+        if( isEmpty() )
+            return -1;
 
-        int to_ret = buffer[head];
-        buffer[head] = -1;
+        int to_ret = buffer[ head ];
+        buffer[ head ] = -1;
 
-        fullof--;
+        --actualSize;
         ++head;
-        if (head >= bufferSize) head = 0;
+
+        if( head >= bufferSize )
+            head = 0;
         
         return to_ret;
     }
 
     int popBack()
     {
-        if (isEmpty()) return -1;
+        if( isEmpty() )
+            return -1;
 
-        int to_ret = buffer[tail];
-        buffer[tail] = -1;
-        fullof--;
+        int to_ret = buffer[ tail ];
+        buffer[ tail ] = -1;
+
+        --actualSize;
         --tail;
-        if (tail < 0) tail = bufferSize - 1;
+
+        if( tail < 0 )
+            tail = bufferSize - 1;
 
         return to_ret;
     }
 
     void upsize()
     {
-        int *new_buffer;
-        if (bufferSize == 0)
+        int newBufferSize;
+
+        if( bufferSize == 0 )
         {
-            new_buffer = new int[10];
+            newBufferSize = 10;
         } else
         {
-            new_buffer = new int[bufferSize + bufferSize];
+            newBufferSize *= 2;
+            newBufferSize = std::max( 1000000, newBufferSize );
         }
 
+        int *new_buffer = new int [ newBufferSize ];
+
         int j = 0;
-        for (int i = head; i != tail; i = (i + 1) % bufferSize, ++j)
+        for( int i = head; i != tail; i = ( i + 1 ) % bufferSize, ++j )
         {
             new_buffer[j] = buffer[i];
         }
 
-        if (tail != -1) {
-            new_buffer[j] = buffer[tail];
+        if( tail != -1 ) {
+            new_buffer[j] = buffer[ tail ];
         }
 
 
-        std::free(buffer);
+        delete[] buffer;
         buffer = nullptr;
 
         head = 0;
-        if (fullof == 0) tail = 0;
-        else tail = fullof - 1;
+        if( actualSize == 0 ) tail = 0;
+        else tail = actualSize - 1;
         
         buffer = new_buffer;
-        if (bufferSize == 0) bufferSize = 10;
-        else bufferSize += bufferSize;
+        bufferSize = newBufferSize;
     }
 
     void printBuffer()
     {
-        for (int i = 0; i < bufferSize; i++)
+        for( int i = 0; i < bufferSize; i++ )
         {
             std::cout << buffer[i] << " ";
         }
@@ -133,31 +151,34 @@ public:
 
     bool isFull()
     {
-        return (fullof == bufferSize) && (fullof != 0);
+        return ( actualSize == bufferSize ) && ( actualSize != 0 );
     }
 
     bool isEmpty()
     {
-        return !fullof;
+        return !actualSize;
     }
-    int bufferSize;
-    int * buffer;
+    
 private:
-    int fullof;
+    int * buffer;
+    int bufferSize;
+    int actualSize;
 
     int head;
     int tail;
 };
 
 
-void checkIf(bool x) {
-    if (x) std::cout << "YES\n";
-    else std::cout << "NO\n";
+void checkIf( bool x ) {
+    if ( x )
+        std::cout << "YES\n";
+    else
+        std::cout << "NO\n";
 }
 
 
 
-void run(std::istream & in, std::ostream & out)
+void run( std::istream & in, std::ostream & out )
 {
     Deque q;
 
@@ -167,36 +188,37 @@ void run(std::istream & in, std::ostream & out)
 
     int cmd;
     int num;
-    while(sampleCounter--)
+    while( sampleCounter-- )
     {
         in >> cmd >> num;
 
-        switch (cmd)
+        switch( cmd )
         {
         case 1:
-            q.pushFront(num);
+            q.pushFront( num );
             break;
         case 2:
-            if (q.popFront() != num) stateOfTask = 0;
+            if ( q.popFront() != num ) stateOfTask = 0;
             break;
         case 3:
-            q.pushBack(num);
+            q.pushBack( num );
             break;
         case 4:
-            if (q.popBack() != num) stateOfTask = 0;
+            if ( q.popBack() != num ) stateOfTask = 0;
             break;
         
         default:
             break;
         }
-        //q.printBuffer();
     }
 
-    if (stateOfTask) out << "YES" << std::endl;
-    else out << "NO" << std::endl;
+    if ( stateOfTask )
+        out << "YES" << std::endl;
+    else
+        out << "NO" << std::endl;
 }
 
-
+/*
 void testLogic() {
     {
         Deque q;
@@ -277,10 +299,11 @@ void testLogic() {
         assert(q.popFront() == 2);
     }
 }
+*/
 
-
-int main(int argc, const char *argv[]) {
-    //run(std::cin, std::cout);
-    testLogic();
+int main( int argc, const char *argv[] )
+{
+    run( std::cin, std::cout );
+    //testLogic();
     return 0;
 }
