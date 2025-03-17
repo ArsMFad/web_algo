@@ -33,7 +33,12 @@ public:
 
     void pushBack(int x)
     {
-
+        if (tail + 1 == bufferSize) {
+            upsize();
+        }
+        
+        ++tail;
+        buffer[tail] = x;
     }
 
     int popFront()
@@ -48,13 +53,32 @@ public:
 
     void upsize()
     {
-        int *new_buffer = new int[bufferSize*2];
+        int *new_buffer = new int[(bufferSize + 1)*2];
 
-        for (int i = head, j = 0; i !=tail; i++)
+        for (int i = head, j = 0; i != tail; i = (i + 1) % bufferSize, ++j)
         {
             new_buffer[j] = buffer[i];
         }
+        if (tail != -1) {
+            new_buffer[tail] = buffer[tail];
+        }
+
+        head = 0;
+
+        delete buffer;
+        buffer = new_buffer;
         
+        bufferSize = (bufferSize+1)*2;
+    }
+
+    void printBuffer()
+    {
+        for (int i = 0; i < bufferSize; i++)
+        {
+            std::cout << buffer[i] << " ";
+        }
+        
+        std::cout << std::endl << "\n";
     }
 private:
     int * buffer;
@@ -65,91 +89,25 @@ private:
 };
 
 
-void testLogic()
-{
-    Queue queue;
-    int sampleCount = 100;
-
-    assert(queue.IsEmpty());
-
-    for (int i = 0; i < sampleCount; i++)
-        queue.Enqueue(i);
-
-    assert(!queue.IsEmpty());
-
-    for (int i = 0; i < sampleCount; i++)
-        assert(i == queue.Dequeu());
-    
-    assert(queue.IsEmpty());
-}
-
-
-void run(std::istream &input, std::ostream &output)
-{
-    Queue queue;
-
-    int n = 0;
-    input >> n;
-
-    for (int i = 0; i < n; i++)
-    {
-        int op = 0, val = 0;
-        input >> op >> val;
-
-        switch (op)
-        {
-            case 2:
-            {
-                int tmpVal = queue.Dequeu();
-                if (tmpVal != val)
-                {
-                    output << "NO" << std::endl;
-                    return;
-                }
-                break;
-            }
-            case 3:
-            {
-                queue.Enqueue(val);
-                break;
-            }
-            default:
-                break;
-        }
-    }
-
-    std::cout << "YES" << std::endl;
-    
-    return;
-}
-
-
-void testQueue()
-{
-    {
-    std::stringstream input, output;
-    input << "3" << std::endl;
-    input << "3 111" << std::endl;
-    input << "2 111" << std::endl;
-    input << "3 222" << std::endl;
-    run(input, output);
-    assert(output.str() == "YES\n");
-    }
-    {
-    std::stringstream input, output;
-    input << "3" << std::endl;
-    input << "3 111" << std::endl;
-    input << "2 222" << std::endl;
-    input << "3 222" << std::endl;
-    run(input, output);
-    assert(output.str() == "NO\n");
-    }
-}
-
-
 int main(int argc, const char *argv[]) {
-    run(std::cin, std::cout);
+    Deque q;
 
-    //testLogic();
+    q.printBuffer();
+    q.pushBack(1);
+    q.printBuffer();
+    q.pushBack(1);
+    q.printBuffer();
+    q.pushBack(1);
+    q.printBuffer();
+    q.pushBack(1);
+    q.printBuffer();
+    q.pushBack(1);
+    q.printBuffer();
+    q.pushBack(1);
+    q.printBuffer();
+    q.pushBack(1);
+    q.printBuffer();
+    q.pushBack(1);
+
     return 0;
 }
