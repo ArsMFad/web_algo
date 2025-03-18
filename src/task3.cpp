@@ -12,10 +12,6 @@
 #include <cmath>
 
 
-#include <iostream>
-#include <cassert>
-#include <algorithm>
-
 class Deque {
 public:
     Deque()
@@ -211,9 +207,9 @@ void run( std::istream & in, std::ostream & out )
     }
 
     if ( stateOfTask )
-        out << "YES" << std::endl;
+        out << "YES\n";
     else
-        out << "NO" << std::endl;
+        out << "NO\n";
 }
 
 
@@ -225,7 +221,6 @@ void testLogic() {
         {
             q.pushBack(1);
         }
-        
     }
     {
         Deque q;
@@ -240,7 +235,7 @@ void testLogic() {
         assert(q.popFront() == 2);
         assert(q.popBack() == 5);
         assert(q.popBack() == 1);
-        assert(q.popBack() == -1); // Дек пуст
+        assert(q.popBack() == -1);
         q.pushBack(3);
         assert(q.popBack() == 3);
     }
@@ -259,7 +254,7 @@ void testLogic() {
         assert(q.popBack() == 4);
         assert(q.popFront() == 1);
         assert(q.popBack() == 3);
-        assert(q.popFront() == -1); // Дек пуст
+        assert(q.popFront() == -1);
     }
     {
         Deque q;
@@ -271,12 +266,12 @@ void testLogic() {
         assert(q.popFront() == 4);
         assert(q.popBack() == 1);
         assert(q.popFront() == 3);
-        assert(q.popBack() == -1); // Дек пуст
+        assert(q.popBack() == -1);
     }
     {
         Deque q;
-        assert(q.popFront() == -1); // Дек пуст
-        assert(q.popBack() == -1);  // Дек пуст
+        assert(q.popFront() == -1);
+        assert(q.popBack() == -1);
         q.pushFront(1);
         assert(q.popBack() == 1);
         q.pushBack(2);
@@ -295,7 +290,7 @@ void testLogic() {
         assert(q.popFront() == 2);
         assert(q.popBack() == 5);
         assert(q.popBack() == 1);
-        assert(q.popBack() == -1); // Дек пуст
+        assert(q.popBack() == -1);
         q.pushBack(3);
         assert(q.popBack() == 3);
     }
@@ -314,7 +309,7 @@ void testLogic() {
         assert(q.popBack() == 4);
         assert(q.popFront() == 1);
         assert(q.popBack() == 3);
-        assert(q.popFront() == -1); // Дек пуст
+        assert(q.popFront() == -1);
     }
     {
         Deque q;
@@ -326,19 +321,18 @@ void testLogic() {
         assert(q.popFront() == 4);
         assert(q.popBack() == 1);
         assert(q.popFront() == 3);
-        assert(q.popBack() == -1); // Дек пуст
+        assert(q.popBack() == -1);
     }
     {
         Deque q;
-        assert(q.popFront() == -1); // Дек пуст
-        assert(q.popBack() == -1);  // Дек пуст
+        assert(q.popFront() == -1);
+        assert(q.popBack() == -1);
         q.pushFront(1);
         assert(q.popBack() == 1);
         q.pushBack(2);
         assert(q.popFront() == 2);
     }
     {
-        // Тест с большим количеством элементов
         Deque q;
         for (int i = 0; i < 101; ++i) {
             q.pushFront(i);
@@ -346,10 +340,9 @@ void testLogic() {
         for (int i = 100; i >= 0; --i) {
             assert(q.popFront() == i);
         }
-        assert(q.popFront() == -1); // Дек пуст
+        assert(q.popFront() == -1);
     }
     {
-        // Тест с чередованием операций
         Deque q;
         q.pushBack(1);
         q.pushFront(2);
@@ -359,10 +352,9 @@ void testLogic() {
         assert(q.popBack() == 3);
         assert(q.popFront() == 2);
         assert(q.popBack() == 1);
-        assert(q.popFront() == -1); // Дек пуст
+        assert(q.popFront() == -1);
     }
     {
-        // Тест с множеством операций
         Deque q;
         q.pushFront(1);
         q.pushBack(2);
@@ -376,32 +368,29 @@ void testLogic() {
         assert(q.popBack() == 6);
         assert(q.popFront() == 1);
         assert(q.popBack() == 2);
-        assert(q.popFront() == -1); // Дек пуст
+        assert(q.popFront() == -1);
     }
     {
-        // Тест с пустым деком после операций
         Deque q;
         q.pushFront(1);
         q.pushBack(2);
         assert(q.popFront() == 1);
         assert(q.popBack() == 2);
-        assert(q.popFront() == -1); // Дек пуст
-        assert(q.popBack() == -1);  // Дек пуст
+        assert(q.popFront() == -1);
+        assert(q.popBack() == -1);
         q.pushBack(3);
         assert(q.popFront() == 3);
     }
     {
-        // Тест с добавлением и извлечением одного элемента
         Deque q;
         q.pushFront(42);
         assert(q.popBack() == 42);
-        assert(q.popFront() == -1); // Дек пуст
+        assert(q.popFront() == -1);
         q.pushBack(100);
         assert(q.popFront() == 100);
-        assert(q.popBack() == -1); // Дек пуст
+        assert(q.popBack() == -1);
     }
     {
-        // Тест с большим количеством операций
         Deque q;
         for (int i = 0; i < 10000; ++i) {
             q.pushFront(i);
@@ -411,15 +400,15 @@ void testLogic() {
             assert(q.popFront() == i);
             assert(q.popBack() == i);
         }
-        assert(q.popFront() == -1); // Дек пуст
-        assert(q.popBack() == -1);  // Дек пуст
+        assert(q.popFront() == -1);
+        assert(q.popBack() == -1);
     }
 }
 
 
 int main( int argc, const char *argv[] )
 {
-//    run( std::cin, std::cout );
-    testLogic();
+    run( std::cin, std::cout );
+//    testLogic();
     return 0;
 }
