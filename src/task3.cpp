@@ -163,13 +163,13 @@ private:
     int tail;
 };
 
+
 void checkIf( bool x ) {
     if ( x )
         std::cout << "YES\n";
     else
         std::cout << "NO\n";
 }
-
 
 
 void run( std::istream & in, std::ostream & out )
