@@ -34,6 +34,7 @@ class Array
 public:
     Array();
     ~Array();
+    Array(const Array& _arr);
 
     T &operator[] ( int i );
     void Add( T element );
@@ -63,6 +64,19 @@ template <typename T>
 Array<T>::~Array()
 {
     delete[] buffer;
+}
+
+template <typename T>
+Array<T>::Array(const Array<T>& _arr)
+{
+    bufferSize = _arr.bufferSize;
+    actualSize = _arr.actualSize;
+
+    delete[] buffer;
+    buffer = new T[bufferSize];
+
+    for( int i = 0; i < actualSize; ++i )
+        arr[i] = _arr[i];
 }
 
 template <typename T>
@@ -125,7 +139,7 @@ public:
     ~Heap();
     explicit Heap( const Array<T>& _arr);
 
-    void Insert( int element );
+    void Insert( T element );
 
     int ExtractMax();
     int PeekMax() const;
@@ -142,11 +156,49 @@ template <typename T>
 Heap<T>::Heap() {}
 
 template <typename T>
+Heap<T>::~Heap() {}
+
+template <typename T>
 Heap<T>::Heap( const Array<T>& _arr)
 {
     arr = _arr;
 }
 
+template <typename T>
+void Heap<T>::Insert( T element )
+{
+    arr.Add( element );
+    siftUp( arr.Size() - 1 );
+}
+
+template <typename T>
+int Heap<T>::ExtractMax()
+{
+    assert( !arr.IsEmpty() );
+
+    int result = arr[0];
+    arr[0] = arr.Last();
+    arr.DeleteLast();
+
+    if( !arr.IsEmpty() )
+        siftDown( 0 );
+    
+    return result;
+}
+
+template <typename T>
+int Heap<T>::PeekMax() const
+{
+    assert( !arr.IsEmpty() );
+    return arr[0];
+}
+
+template <typename T>
+void Heap<T>::buildHeap()
+{
+    for( int i = arr.Size() / 2 - 1; i >= 0; --i )
+        siftDown(i);
+}
 
 template <typename T>
 void Heap<T>::siftDown( int i )
@@ -168,15 +220,6 @@ void Heap<T>::siftDown( int i )
     }
 }
 
-
-template <typename T>
-void Heap<T>::buildHeap()
-{
-    for( int i = arr.Size() / 2 - 1; i >= 0; --i )
-        siftDown(i);
-}
-
-
 template <typename T>
 void Heap<T>::siftUp( int index )
 {
@@ -191,33 +234,21 @@ void Heap<T>::siftUp( int index )
 }
 
 
-template <typename T>
-void Heap<T>::Insert( int element )
-{
-    arr.Add( element );
-    siftUp( arr.Size() - 1 );
-}
-
-
-template <typename T>
-int Heap<T>::ExtractMax()
-{
-    assert( !arr.IsEmpty() );
-
-    int result = arr[0];
-    arr[0] = arr.Last();
-    arr.DeleteLast();
-
-    if( !arr.IsEmpty() )
-        siftDown( 0 );
-    
-    return result;
-}
-
-
 int main( int argc, const char *argv[] )
 {
-//   run( std::cin, std::cout );
-//    testLogic();
+    Array<int> a1, a2, a3;
+    a1.Add(6);
+    a2.Add(50);
+    a2.Add(90);
+    a3.Add(1);
+    a3.Add(10);
+    a3.Add(70);
+
+    Heap<Array<int>> h;
+
+    h.Insert(a1);
+    h.Insert(a2);
+    h.Insert(a3);
+    
     return 0;
 }
