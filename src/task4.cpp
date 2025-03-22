@@ -11,16 +11,38 @@ K отсортированных массивов суммарной длино�
 #include <sstream>
 #include <cmath>
 
+
+template <typename T>
+struct ArrayIterator
+{
+    T* buf;
+    int size;
+    int curPos;
+};
+
+
+template <typename T>
+bool comparator(const struct ArrayIterator &v1, const struct ArrayIterator &v2)
+{
+    return v1.buf[v1.curPos] < v2.buf[v2.curPos];
+}
+
+
 template <typename T>
 class Array
 {
 public:
-    int Size();
+    Array();
+    ~Array();
+
     T &operator[] ( int i );
     void Add( T element );
-    bool IsEmpty();
+
     T Last();
     void DeleteLast();
+
+    bool IsEmpty();
+    int Size();
 private:
     T * buffer;
     int bufferSize;
@@ -29,6 +51,19 @@ private:
     void upsize();
 };
 
+template <typename T>
+Array<T>::Array()
+{
+    buffer = new T[0];
+    bufferSize = 0;
+    actualSize = 0;
+}
+
+template <typename T>
+Array<T>::~Array()
+{
+    delete[] buffer;
+}
 
 template <typename T>
 int Array<T>::Size()
@@ -63,7 +98,6 @@ void Array<T>::upsize()
     buffer = newBuffer;
 }
 
-
 template <typename T>
 bool Array<T>::IsEmpty()
 {
@@ -75,7 +109,6 @@ T Array<T>::Last()
 {
     return buffer[actualSize - 1];
 }
-
 
 template <typename T>
 void Array<T>::DeleteLast()
@@ -89,13 +122,12 @@ class Heap
 {
 public:
     Heap();
-    explicit Heap( const Array<T>& _arr);
     ~Heap();
+    explicit Heap( const Array<T>& _arr);
 
     void Insert( int element );
 
     int ExtractMax();
-
     int PeekMax() const;
 private:
     Array<T> arr;
@@ -104,6 +136,16 @@ private:
     void siftDown( int i );
     void siftUp( int i );
 };
+
+
+template <typename T>
+Heap<T>::Heap() {}
+
+template <typename T>
+Heap<T>::Heap( const Array<T>& _arr)
+{
+    arr = _arr;
+}
 
 
 template <typename T>
