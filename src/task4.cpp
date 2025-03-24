@@ -190,13 +190,13 @@ ArrayIterator<T> Heap<T, Comparator>::PeekMin() const
     return arr[0];
 }
 
-template <typename T, typename Comparator>
-bool Heap<T, Comparator>::IsEmpty() const {
+template< typename T, typename Comparator >
+bool Heap< T, Comparator >::IsEmpty() const {
     return arr.IsEmpty();
 }
 
-template <typename T, typename Comparator>
-void Heap<T, Comparator>::siftDown( int i )
+template< typename T, typename Comparator >
+void Heap< T, Comparator >::siftDown( int i )
 {
     int left = 2 * i + 1;
     int right = 2 * i + 2;
@@ -215,8 +215,8 @@ void Heap<T, Comparator>::siftDown( int i )
     }
 }
 
-template <typename T, typename Comparator>
-void Heap<T, Comparator>::siftUp( int index )
+template < typename T, typename Comparator >
+void Heap< T, Comparator >::siftUp( int index )
 {
     while( index > 0 )
     {
@@ -231,13 +231,13 @@ void Heap<T, Comparator>::siftUp( int index )
 }
 
 
-template <typename T, typename Comparator>
-Array<T> mergeKSortedArrays(const Array<Array<T>*>& arrays, Comparator comp) {
-    Heap<T, Comparator> heap(comp);
+template < typename T, typename Comparator >
+Array<T> mergeKSortedArrays( const Array<Array<T>*>& arrays, Comparator comp ) {
+    Heap<T, Comparator> heap( comp );
     Array<T> result;
 
-    for (int i = 0; i < arrays.Size(); ++i) {
-        if (!arrays[i]->IsEmpty()) {
+    for( int i = 0; i < arrays.Size(); ++i ) {
+        if( !arrays[i]->IsEmpty() ) {
             ArrayIterator<T> iterator;
             iterator.buffer = arrays[i];
             iterator.curPos = 0;
@@ -245,12 +245,14 @@ Array<T> mergeKSortedArrays(const Array<Array<T>*>& arrays, Comparator comp) {
         }
     }
 
-    while (!heap.IsEmpty()) {
+    while( !heap.IsEmpty() )
+    {
         ArrayIterator<T> minElement = heap.ExtractMin();
-        result.Add(minElement.Value());
+        result.Add( minElement.Value() );
 
-        if (minElement.HasNext()) {
-            heap.Insert(minElement.Next());
+        if( minElement.HasNext() )
+        {
+            heap.Insert( minElement.Next() );
         }
     }
 
@@ -258,7 +260,152 @@ Array<T> mergeKSortedArrays(const Array<Array<T>*>& arrays, Comparator comp) {
 }
 
 
-void run(std::istream& in, std::ostream& out)
+void testLogic() {
+    {
+        Array<Array<int>*> arrays;
+        
+        Array<int>* a1 = new Array<int>();
+        a1->Add(1);
+        a1->Add(4);
+        a1->Add(7);
+        
+        Array<int>* a2 = new Array<int>();
+        a2->Add(2);
+        a2->Add(5);
+        a2->Add(8);
+        
+        Array<int>* a3 = new Array<int>();
+        a3->Add(3);
+        a3->Add(6);
+        a3->Add(9);
+        
+        arrays.Add(a1);
+        arrays.Add(a2);
+        arrays.Add(a3);
+        
+        Array<int> merged = mergeKSortedArrays(arrays, std::less<int>());
+        
+        assert(merged.Size() == 9);
+        for (int i = 0; i < 9; ++i) {
+            assert(merged[i] == i + 1);
+        }
+        
+        delete a1;
+        delete a2;
+        delete a3;
+    }
+    {
+        Array<Array<int>*> arrays;
+        
+        Array<int>* a1 = new Array<int>();
+        Array<int>* a2 = new Array<int>();
+        a2->Add(2);
+        a2->Add(5);
+        Array<int>* a3 = new Array<int>();
+        
+        arrays.Add(a1);
+        arrays.Add(a2);
+        arrays.Add(a3);
+        
+        Array<int> merged = mergeKSortedArrays(arrays, std::less<int>());
+        
+        assert(merged.Size() == 2);
+        assert(merged[0] == 2);
+        assert(merged[1] == 5);
+        
+        delete a1;
+        delete a2;
+        delete a3;
+    }
+    {
+        Array<Array<int>*> arrays;
+        
+        Array<int>* a1 = new Array<int>();
+        for (int i = 0; i < 1000; ++i) {
+            a1->Add(i * 2);
+        }
+        
+        arrays.Add(a1);
+        
+        Array<int> merged = mergeKSortedArrays(arrays, std::less<int>());
+        
+        assert(merged.Size() == 1000);
+        for (int i = 0; i < 1000; ++i) {
+            assert(merged[i] == i * 2);
+        }
+        
+        delete a1;
+    }
+    {
+        Array<Array<int>*> arrays;
+        
+        Array<int>* a1 = new Array<int>();
+        a1->Add(10);
+        a1->Add(20);
+        a1->Add(30);
+        
+        Array<int>* a2 = new Array<int>();
+        a2->Add(15);
+        a2->Add(25);
+        
+        Array<int>* a3 = new Array<int>();
+        a3->Add(5);
+        a3->Add(35);
+        a3->Add(45);
+        a3->Add(55);
+        
+        arrays.Add(a1);
+        arrays.Add(a2);
+        arrays.Add(a3);
+        
+        Array<int> merged = mergeKSortedArrays(arrays, std::less<int>());
+        
+        assert(merged.Size() == 9);
+        assert(merged[0] == 5);
+        assert(merged[1] == 10);
+        assert(merged[2] == 15);
+        assert(merged[3] == 20);
+        assert(merged[4] == 25);
+        assert(merged[5] == 30);
+        assert(merged[6] == 35);
+        assert(merged[7] == 45);
+        assert(merged[8] == 55);
+        
+        delete a1;
+        delete a2;
+        delete a3;
+    }
+    {
+        Array<Array<int>*> arrays;
+        
+        Array<int>* a1 = new Array<int>();
+        a1->Add(30);
+        a1->Add(20);
+        a1->Add(10);
+        
+        Array<int>* a2 = new Array<int>();
+        a2->Add(25);
+        a2->Add(15);
+        
+        arrays.Add(a1);
+        arrays.Add(a2);
+        
+        Array<int> merged = mergeKSortedArrays(arrays, std::greater<int>());
+        
+        assert(merged.Size() == 5);
+        assert(merged[0] == 30);
+        assert(merged[1] == 25);
+        assert(merged[2] == 20);
+        assert(merged[3] == 15);
+        assert(merged[4] == 10);
+        
+        delete a1;
+        delete a2;
+    }
+}
+
+
+void run( std::istream& in, std::ostream& out )
 {
     int K;
     in >> K;
@@ -274,37 +421,14 @@ void run(std::istream& in, std::ostream& out)
         {
             int element;
             in >> element;
-            arr->Add(element);
+            arr->Add( element );
         }
-        arrays.Add(arr);
+        arrays.Add( arr );
     }
 
-    Heap<int> heap;
-    for (int i = 0; i < arrays.Size(); i++)
-    {
-        if( !arrays[i]->IsEmpty() )
-        {
-            ArrayIterator<int> it;
-            it.buffer = arrays[i];
-            it.curPos = 0;
-            heap.Insert(it);
-        }
-    }
+    Array<int> result = mergeKSortedArrays( arrays, std::less<int>() );
 
-    Array<int> result;
-
-    while( !heap.IsEmpty() )
-    {
-        ArrayIterator<int> min = heap.ExtractMin();
-        result.Add(min.Value());
-
-        if ( min.HasNext() )
-        {
-            heap.Insert( min.Next() );
-        }
-    }
-
-    for ( int i = 0; i < result.Size(); i++ )
+    for ( int i = 0; i < result.Size(); ++i )
     {
         out << result[i] << " ";
     }
