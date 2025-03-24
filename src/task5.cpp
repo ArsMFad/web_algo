@@ -100,6 +100,33 @@ public:
         return to_ret;
     }
 
+    void printBuffer() const
+    {
+        for( int i = 0; i < bufferSize; ++i )
+        {
+            std::cout << buffer[i] << " ";
+        }
+        std::cout << std::endl;
+    }
+
+    bool isFull() const
+    {
+        return actualSize == bufferSize;
+    }
+
+    bool isEmpty() const
+    {
+        return actualSize == 0;
+    }
+
+private:
+    int * buffer;
+    int bufferSize;
+    int actualSize;
+
+    int head;
+    int tail;
+
     void upsize()
     {
         int newBufferSize = ( bufferSize == 0 ) ? 2 : bufferSize * 2;
@@ -134,33 +161,6 @@ public:
 
         bufferSize = newBufferSize;
     }
-
-    void printBuffer() const
-    {
-        for( int i = 0; i < bufferSize; ++i )
-        {
-            std::cout << buffer[i] << " ";
-        }
-        std::cout << std::endl;
-    }
-
-    bool isFull() const
-    {
-        return actualSize == bufferSize;
-    }
-
-    bool isEmpty() const
-    {
-        return actualSize == 0;
-    }
-
-private:
-    int * buffer;
-    int bufferSize;
-    int actualSize;
-
-    int head;
-    int tail;
 };
 
 
