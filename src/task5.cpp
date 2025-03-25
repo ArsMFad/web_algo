@@ -1,8 +1,14 @@
 /*
+Группа людей называется современниками если был такой момент, когда
+они могли собраться вместе. Для этого в этот момент каждому из них
+должно было уже исполниться 18 лет, но ещё не исполниться 80 лет.
 
-Реализовать дек с динамическим зацикленным буфером (на основе динамического массива).
-Требования: Дек должен быть реализован в виде класса.
+Дан список Жизни Великих Людей. Необходимо получить максимальное количество
+современников. В день 18летия человек уже может принимать участие в собраниях,
+а в день 80летия и в день смерти уже не может.
 
+Замечание. Человек мог не дожить до 18-летия, либо умереть в день 18-летия.
+В этих случаях принимать участие в собраниях он не мог. 
 */
 
 
@@ -10,405 +16,127 @@
 #include <cassert>
 #include <sstream>
 #include <cmath>
+#include <cstring>
 
 
-class Deque {
-public:
-    Deque()
-        : buffer( nullptr ), bufferSize( 0 ), actualSize( 0 ), head( -1 ), tail( -1 )
-    {
-    }
+struct PersonDate
+{
+    int id;
+    int day;
+    int month;
+    int year;
+    bool isDead;
 
-    ~Deque()
-    {
-        delete[] buffer;
-    }
+    PersonDate() : id(0), day(0), month(0), year(0), isDead(false) {}
 
-    void pushFront( int x )
-    {
-        if( isFull() )
-            upsize();
-
-        if( isEmpty() )
-        {
-            head = 0;
-            tail = 0;
-        } else
-        {
-            head = ( head - 1 + bufferSize ) % bufferSize;
-        }
-
-        buffer[ head ] = x;
-        ++actualSize;
-    }
-
-    void pushBack( int x ) {
-        if(isFull())
-            upsize();
-
-        if( isEmpty() )
-        {
-            head = 0;
-            tail = 0;
-        } else
-        {
-            tail = ( tail + 1 ) % bufferSize;
-        }
-
-        buffer[ tail ] = x;
-        ++actualSize;
-    }
-
-    int popFront()
-    {
-        if( isEmpty() )
-            return -1;
-
-        int to_ret = buffer[ head ];
-
-        --actualSize;
-        if( isEmpty() )
-        {
-            head = -1;
-            tail = -1;
-        } else {
-            head = ( head + 1 ) % bufferSize;
-        }
-
-        return to_ret;
-    }
-
-    int popBack()
-    {
-        if( isEmpty() )
-        {
-            return -1;
-        }
-
-        int to_ret = buffer[ tail ];
-
-        --actualSize;
-        if( isEmpty() )
-        {
-            head = -1;
-            tail = -1;
-        } else
-        {
-            tail = (tail - 1 + bufferSize) % bufferSize;
-        }
-
-        return to_ret;
-    }
-
-    void printBuffer() const
-    {
-        for( int i = 0; i < bufferSize; ++i )
-        {
-            std::cout << buffer[i] << " ";
-        }
-        std::cout << std::endl;
-    }
-
-    bool isFull() const
-    {
-        return actualSize == bufferSize;
-    }
-
-    bool isEmpty() const
-    {
-        return actualSize == 0;
-    }
-
-private:
-    int * buffer;
-    int bufferSize;
-    int actualSize;
-
-    int head;
-    int tail;
-
-    void upsize()
-    {
-        int newBufferSize = ( bufferSize == 0 ) ? 2 : bufferSize * 2;
-        newBufferSize = std::min( newBufferSize, 1000000 );
-
-        int* newBuffer = new int[ newBufferSize ];
-
-        if( !isEmpty() )
-        {
-            if( head <= tail )
-            {
-                std::copy( buffer + head, buffer + tail + 1, newBuffer );
-            } else
-            {
-                std::copy( buffer + head, buffer + bufferSize, newBuffer );
-                std::copy( buffer, buffer + tail + 1, newBuffer + ( bufferSize - head ));
-            }
-        }
-
-        delete [] buffer;
-        buffer = newBuffer;
-
-        if( !isEmpty() )
-        {
-            head = 0;
-            tail = actualSize - 1;
-        } else
-        {
-            head = -1;
-            tail = -1;
-        }
-
-        bufferSize = newBufferSize;
-    }
+    PersonDate( int _id, int _day, int _month, int _year, int _isDead ) : id( _id ), day( _day ), month( _month ), year( _year ), isDead( _isDead ) {}
 };
 
 
-void checkIf( bool x ) {
-    if ( x )
-        std::cout << "YES\n";
-    else
-        std::cout << "NO\n";
-}
-
-
-void run( std::istream & in, std::ostream & out )
+bool comparatorPersonDate(const struct PersonDate a, const struct PersonDate b)
 {
-    Deque q;
+    if ( a.year != b.year ) return a.year < b.year;
+    if ( a.month != b.month ) return a.month < b.month;
+    if ( a.day != b.day ) return a.day < b.day;
 
-    int sampleCounter;
-    int stateOfTask = 1;
-    in >> sampleCounter;
-
-    int cmd;
-    int num;
-    while( sampleCounter-- )
-    {
-        in >> cmd >> num;
-
-        switch( cmd )
-        {
-        case 1:
-            q.pushFront( num );
-            break;
-        case 2:
-            if ( q.popFront() != num ) stateOfTask = 0;
-            break;
-        case 3:
-            q.pushBack( num );
-            break;
-        case 4:
-            if ( q.popBack() != num ) stateOfTask = 0;
-            break;
-        
-        default:
-            break;
-        }
-    }
-
-    if ( stateOfTask )
-        out << "YES\n";
-    else
-        out << "NO\n";
+    return a.isDead < b.isDead;
 }
 
 
-void testLogic() {
-    {
-        Deque q;
+template< typename T, typename Comparator>
+void Merge( T* firstArr, int firstLen, T* secondArr, int secondLen, T* resultArr, Comparator comp )
+{
+    int firstIndex = 0;
+    int secondIndex = 0;
+    int resultIndex = 0;
 
-        for (int i = 0; i < 1000000; i++)
+    while(( firstIndex < firstLen ) && ( secondIndex < secondLen ))
+    {
+        if (comp(firstArr[ firstIndex ], secondArr[ secondIndex ]))
         {
-            q.pushBack(1);
+            resultArr[ resultIndex++ ] = firstArr[ firstIndex ];
+            ++firstIndex;
+        } else
+        {
+            resultArr[ resultIndex++ ] = secondArr[ secondIndex ];
+            ++secondIndex;
         }
     }
-    {
-        Deque q;
-        q.pushFront(1);
-        q.pushFront(2);
-        q.pushBack(5);
-        q.pushBack(4);
-        q.pushFront(3);
 
-        assert(q.popFront() == 3);
-        assert(q.popBack() == 4);
-        assert(q.popFront() == 2);
-        assert(q.popBack() == 5);
-        assert(q.popBack() == 1);
-        assert(q.popBack() == -1);
-        q.pushBack(3);
-        assert(q.popBack() == 3);
-    }
+    while( firstIndex < firstLen )
     {
-        Deque q;
-        q.pushBack(10);
-        assert(q.popFront() == 10);
+        resultArr[ resultIndex++ ] = firstArr[ firstIndex++ ];
     }
-    {
-        Deque q;
-        q.pushFront(1);
-        q.pushFront(2);
-        q.pushBack(3);
-        q.pushBack(4);
-        assert(q.popFront() == 2);
-        assert(q.popBack() == 4);
-        assert(q.popFront() == 1);
-        assert(q.popBack() == 3);
-        assert(q.popFront() == -1);
-    }
-    {
-        Deque q;
-        q.pushBack(1);
-        q.pushBack(2);
-        q.pushFront(3);
-        q.pushFront(4);
-        assert(q.popBack() == 2);
-        assert(q.popFront() == 4);
-        assert(q.popBack() == 1);
-        assert(q.popFront() == 3);
-        assert(q.popBack() == -1);
-    }
-    {
-        Deque q;
-        assert(q.popFront() == -1);
-        assert(q.popBack() == -1);
-        q.pushFront(1);
-        assert(q.popBack() == 1);
-        q.pushBack(2);
-        assert(q.popFront() == 2);
-    }
-    {
-        Deque q;
-        q.pushFront(1);
-        q.pushFront(2);
-        q.pushBack(5);
-        q.pushBack(4);
-        q.pushFront(3);
 
-        assert(q.popFront() == 3);
-        assert(q.popBack() == 4);
-        assert(q.popFront() == 2);
-        assert(q.popBack() == 5);
-        assert(q.popBack() == 1);
-        assert(q.popBack() == -1);
-        q.pushBack(3);
-        assert(q.popBack() == 3);
-    }
+    while( secondIndex < secondLen )
     {
-        Deque q;
-        q.pushBack(10);
-        assert(q.popFront() == 10);
+        resultArr[ resultIndex++ ] = secondArr[ secondIndex++ ];
     }
+}
+
+
+template< typename T, typename Comparator>
+void MergeSort( T* arr, int len, Comparator comp )
+{
+    if ( len <= 1 ) return;
+
+    int firstLen = len / 2;
+    int secondLen = len - firstLen;
+
+    MergeSort( arr, firstLen, comp );
+    MergeSort( arr + firstLen, secondLen, comp );
+
+    T* temp = new T[ len ];
+    Merge( arr, firstLen, arr + firstLen, secondLen, temp, comp );
+
+    memcpy( arr, temp, sizeof( T ) * len );
+
+    delete[] temp;
+}
+
+
+void run( std::istream& in, std::ostream& out )
+{
+    int K;
+
+    std::cin >> K;
+    
+    PersonDate* arr = new PersonDate[ K * 2 ];
+
+    int j = 0;
+    for( int i = 0; i < K; i++ )
     {
-        Deque q;
-        q.pushFront(1);
-        q.pushFront(2);
-        q.pushBack(3);
-        q.pushBack(4);
-        assert(q.popFront() == 2);
-        assert(q.popBack() == 4);
-        assert(q.popFront() == 1);
-        assert(q.popBack() == 3);
-        assert(q.popFront() == -1);
+        int _day, _month, _year;
+
+        std::cin >> _day >> _month >> _year;
+        arr[j] = PersonDate( i, _day, _month, _year, 0 );
+        ++j;
+
+        std::cin >> _day >> _month >> _year;
+        arr[j] = PersonDate( i, _day, _month, _year, 1 );
+        ++j;
     }
+
+    MergeSort( arr, K*2, comparatorPersonDate );
+
+    int localResult = 0;
+    int maxResult = 0;
+    for( int i = 0; i < K*2; i++ )
     {
-        Deque q;
-        q.pushBack(1);
-        q.pushBack(2);
-        q.pushFront(3);
-        q.pushFront(4);
-        assert(q.popBack() == 2);
-        assert(q.popFront() == 4);
-        assert(q.popBack() == 1);
-        assert(q.popFront() == 3);
-        assert(q.popBack() == -1);
+        if ( !arr[i].isDead ) ++localResult;
+        else --localResult;
+
+        maxResult = std::max( maxResult, localResult );
     }
-    {
-        Deque q;
-        assert(q.popFront() == -1);
-        assert(q.popBack() == -1);
-        q.pushFront(1);
-        assert(q.popBack() == 1);
-        q.pushBack(2);
-        assert(q.popFront() == 2);
-    }
-    {
-        Deque q;
-        for (int i = 0; i < 101; ++i) {
-            q.pushFront(i);
-        }
-        for (int i = 100; i >= 0; --i) {
-            assert(q.popFront() == i);
-        }
-        assert(q.popFront() == -1);
-    }
-    {
-        Deque q;
-        q.pushBack(1);
-        q.pushFront(2);
-        q.pushBack(3);
-        q.pushFront(4);
-        assert(q.popFront() == 4);
-        assert(q.popBack() == 3);
-        assert(q.popFront() == 2);
-        assert(q.popBack() == 1);
-        assert(q.popFront() == -1);
-    }
-    {
-        Deque q;
-        q.pushFront(1);
-        q.pushBack(2);
-        q.pushFront(3);
-        q.pushBack(4);
-        assert(q.popFront() == 3);
-        assert(q.popBack() == 4);
-        q.pushFront(5);
-        q.pushBack(6);
-        assert(q.popFront() == 5);
-        assert(q.popBack() == 6);
-        assert(q.popFront() == 1);
-        assert(q.popBack() == 2);
-        assert(q.popFront() == -1);
-    }
-    {
-        Deque q;
-        q.pushFront(1);
-        q.pushBack(2);
-        assert(q.popFront() == 1);
-        assert(q.popBack() == 2);
-        assert(q.popFront() == -1);
-        assert(q.popBack() == -1);
-        q.pushBack(3);
-        assert(q.popFront() == 3);
-    }
-    {
-        Deque q;
-        q.pushFront(42);
-        assert(q.popBack() == 42);
-        assert(q.popFront() == -1);
-        q.pushBack(100);
-        assert(q.popFront() == 100);
-        assert(q.popBack() == -1);
-    }
-    {
-        Deque q;
-        for (int i = 0; i < 10000; ++i) {
-            q.pushFront(i);
-            q.pushBack(i);
-        }
-        for (int i = 9999; i >= 0; --i) {
-            assert(q.popFront() == i);
-            assert(q.popBack() == i);
-        }
-        assert(q.popFront() == -1);
-        assert(q.popBack() == -1);
-    }
+    
+    std::cout << maxResult << "\n";
+
+    delete arr;
 }
 
 
 int main( int argc, const char *argv[] )
 {
     run( std::cin, std::cout );
-//    testLogic();
     return 0;
 }
