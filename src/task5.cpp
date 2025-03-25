@@ -95,6 +95,12 @@ void MergeSort( T* arr, int len, Comparator comp )
 }
 
 
+void solve( PersonDate* arr , int len )
+{
+
+}
+
+
 void run( std::istream& in, std::ostream& out )
 {
     int K;
@@ -106,18 +112,24 @@ void run( std::istream& in, std::ostream& out )
     int j = 0;
     for( int i = 0; i < K; i++ )
     {
-        int _day, _month, _year;
+        int birthDay, birthMonth, birthYear;
+        int deathDay, deathMonth, deathYear;
 
-        std::cin >> _day >> _month >> _year;
-        arr[j] = PersonDate( i, _day, _month, _year, 0 );
-        ++j;
+        int adultYear = birthYear + 18;
+        arr[ j++ ] = PersonDate( i, birthDay, birthMonth, birthYear, 0 );
 
-        std::cin >> _day >> _month >> _year;
-        arr[j] = PersonDate( i, _day, _month, _year, 1 );
-        ++j;
+        int oldYear = birthYear + 80;
+        if(( deathYear < oldYear ) ||
+           ( deathYear == oldYear && deathMonth < birthMonth) ||
+           ( deathMonth == birthMonth && deathDay < birthDay ))
+           arr[ j++ ] = PersonDate(i, deathDay, deathMonth, deathYear, true);
+        else
+            arr[ j++ ] = PersonDate(i, birthDay, birthMonth, oldYear, true);
     }
 
     MergeSort( arr, K*2, comparatorPersonDate );
+
+    solve( arr, K*2 );
 
     int localResult = 0;
     int maxResult = 0;
