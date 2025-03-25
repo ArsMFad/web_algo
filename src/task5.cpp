@@ -39,7 +39,7 @@ bool comparatorPersonDate(const struct PersonDate a, const struct PersonDate b)
     if ( a.month != b.month ) return a.month < b.month;
     if ( a.day != b.day ) return a.day < b.day;
 
-    return a.isDead < b.isDead;
+    return a.isDead > b.isDead;
 }
 
 
@@ -95,9 +95,107 @@ void MergeSort( T* arr, int len, Comparator comp )
 }
 
 
-void solve( PersonDate* arr , int len )
+int solve( PersonDate* arr, int len )
 {
+    int localResult = 0;
+    int maxResult = 0;
 
+    for( int i = 0; i < len; i++ )
+    {
+        if ( arr[i].isDead ) --localResult;
+        else ++localResult;
+
+        maxResult = std::max( maxResult, localResult );
+    }
+
+    return maxResult;
+}
+
+
+void testLogic() {
+    {
+        PersonDate* arr = new PersonDate[2]
+        {
+            PersonDate( 0, 2, 5, 1998, false ),
+            PersonDate( 0, 2, 5, 2060, true )
+        };
+        
+        assert( arr[0].day == 2 && arr[0].month == 5 && arr[0].year == 1998 && !arr[0].isDead );
+        assert( arr[1].day == 2 && arr[1].month == 5 && arr[1].year == 2060 && arr[1].isDead );
+        delete[] arr;
+    }
+    {
+        PersonDate* arr = new PersonDate[2]
+        {
+            PersonDate( 0, 1, 1, 2000, false ),
+            PersonDate( 0, 1, 1, 2030, true )
+        };
+        
+        assert( arr[0].day == 1 && arr[0].month == 1 && arr[0].year == 2000 && !arr[0].isDead );
+        assert( arr[1].day == 1 && arr[1].month == 1 && arr[1].year == 2030 && arr[1].isDead );
+
+        delete[] arr;
+    }
+    {
+        PersonDate* arr = new PersonDate[2]
+        {
+            PersonDate( 0, 2, 1, 1938, false ),
+            PersonDate( 0, 2, 1, 2000, true )
+        };
+        
+        assert( arr[0].day == 2 && arr[0].month == 1 && arr[0].year == 1938 && !arr[0].isDead );
+        assert( arr[1].day == 2 && arr[1].month == 1 && arr[1].year == 2000 && arr[1].isDead );
+
+        delete[] arr;
+    }
+    {
+        PersonDate* arr = new PersonDate[6]
+        {
+            PersonDate( 0, 2, 1, 1938, false ),
+            PersonDate( 1, 1, 1, 2000, false ),
+            PersonDate( 0, 2, 1, 2000, true ),
+            PersonDate( 1, 1, 1, 2030, true ),
+            PersonDate( 2, 2, 5, 1998, false ),
+            PersonDate( 2, 2, 5, 2060, true )
+        };
+        
+        MergeSort( arr, 6, comparatorPersonDate );
+        
+        assert( comparatorPersonDate(arr[0], arr[1]));
+        assert( comparatorPersonDate(arr[1], arr[2]));
+        assert( comparatorPersonDate(arr[2], arr[3]));
+        assert( comparatorPersonDate(arr[3], arr[4]));
+        assert( comparatorPersonDate(arr[4], arr[5]));
+        
+        delete[] arr;
+    }
+    {
+        PersonDate* arr = new PersonDate[6]
+        {
+            PersonDate( 0, 2, 1, 1938, false ),
+            PersonDate( 0, 2, 1, 2000, true ),
+            
+            PersonDate( 1, 1, 1, 2000, false ),
+            PersonDate( 1, 1, 1, 2030, true ),
+            
+            PersonDate( 2, 2, 5, 1998, false ),
+            PersonDate( 2, 2, 5, 2060, true )
+        };
+        
+        MergeSort( arr, 6, comparatorPersonDate );
+        
+        assert( arr[0].year == 1938 && arr[0].month == 1 && arr[0].day == 2 );
+        assert( arr[1].year == 1998 && arr[1].month == 5 && arr[1].day == 2 );
+        assert( arr[2].year == 2000 && arr[2].month == 1 && arr[2].day == 1 );
+        assert( arr[3].year == 2000 && arr[3].month == 1 && arr[3].day == 2 );
+        assert( arr[4].year == 2030 && arr[4].month == 1 && arr[4].day == 1 );
+        assert( arr[5].year == 2060 && arr[5].month == 5 && arr[5].day == 2 );
+        
+        int result = solve( arr, 6 );
+        assert( result == 3 );
+        
+        delete[] arr;
+    }
 }
 
 
@@ -105,7 +203,7 @@ void run( std::istream& in, std::ostream& out )
 {
     int K;
 
-    std::cin >> K;
+    in >> K;
     
     PersonDate* arr = new PersonDate[ K * 2 ];
 
@@ -115,40 +213,43 @@ void run( std::istream& in, std::ostream& out )
         int birthDay, birthMonth, birthYear;
         int deathDay, deathMonth, deathYear;
 
+        in >> birthDay >> birthMonth >> birthYear;
+        in >> deathDay >> deathMonth >> deathYear;
+
         int adultYear = birthYear + 18;
-        arr[ j++ ] = PersonDate( i, birthDay, birthMonth, birthYear, 0 );
-
         int oldYear = birthYear + 80;
-        if(( deathYear < oldYear ) ||
-           ( deathYear == oldYear && deathMonth < birthMonth) ||
-           ( deathMonth == birthMonth && deathDay < birthDay ))
-           arr[ j++ ] = PersonDate(i, deathDay, deathMonth, deathYear, true);
+
+        bool reachedAdultYear = ( deathYear > adultYear ) ||
+                                ( deathYear == adultYear && deathMonth > birthMonth ) ||
+                                ( deathYear == adultYear && deathMonth == birthMonth && deathDay >= birthDay );
+
+        bool didntReachedOldYear = ( deathYear < oldYear ) ||
+                                   ( deathYear == oldYear && deathMonth < birthMonth ) ||
+                                   ( deathYear == oldYear && deathMonth == birthMonth && deathDay < birthDay );
+        
+        if( !reachedAdultYear ) continue;
+        arr[j++] = PersonDate( i, birthDay, birthMonth, adultYear, false );
+
+        if ( didntReachedOldYear )
+            arr[j++] = PersonDate( i, deathDay, deathMonth, deathYear, true );
         else
-            arr[ j++ ] = PersonDate(i, birthDay, birthMonth, oldYear, true);
+            arr[j++] = PersonDate( i, birthDay, birthMonth, oldYear, true );
+
     }
 
-    MergeSort( arr, K*2, comparatorPersonDate );
+    MergeSort( arr, j, comparatorPersonDate );
 
-    solve( arr, K*2 );
-
-    int localResult = 0;
-    int maxResult = 0;
-    for( int i = 0; i < K*2; i++ )
-    {
-        if ( !arr[i].isDead ) ++localResult;
-        else --localResult;
-
-        maxResult = std::max( maxResult, localResult );
-    }
+    int result = solve( arr, j );
     
-    std::cout << maxResult << "\n";
+    std::cout << result << "\n";
 
-    delete arr;
+    delete[] arr;
 }
 
 
 int main( int argc, const char *argv[] )
 {
     run( std::cin, std::cout );
+    //testLogic();
     return 0;
 }
