@@ -6,6 +6,7 @@ K отсортированных массивов суммарной длино�
 */
 
 
+
 #include <iostream>
 #include <cassert>
 #include <sstream>
