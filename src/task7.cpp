@@ -1,144 +1,211 @@
 /*
-Реализуйте стратегию выбора опорного элемента “случайный элемент”. 
-Функцию Partition реализуйте методом прохода двумя итераторами от конца массива к началу.
+Дан массив строк. Количество строк не больше 105.
+Отсортировать массив методом поразрядной сортировки MSD по символам.
+Размер алфавита - 256 символов. Последний символ строки = ‘\0’.
 */
 
 
+#include <vector>
+#include <string>
+#include <algorithm>
 #include <iostream>
 #include <cassert>
-#include <sstream>
-#include <cmath>
-#include <cstring>
-#include <ctime>
 
 
-template< typename T, typename Comparator = std::less<T >>
-int partition( T* arr, int l, int r, Comparator cmp = Comparator() ) {
-    std::srand( std::time( nullptr ));
-    int randomIndex = l + ( std::rand() % (r - l + 1 ));
-
-    std::swap( arr[ randomIndex ], arr[r] );
-    T pivot = arr[r];
-
-    int i = r;
-    int j = r - 1;
-
-    while( j >= l )
-    {
-        if( !cmp( arr[j], pivot ))
-        {
-            --i;
-            std::swap( arr[i], arr[j] );
-        }
-        --j;
-    }
-
-    std::swap( arr[i], arr[r] );
-    return i;
-}
-
-
-template< typename T, typename Comparator = std::less<T >>
-T kth_statistics( T* arr, int k, int l, int r, Comparator cmp = Comparator() ) {
-    while( true ) {
-        int pivot_pos = partition( arr, l, r, cmp );
-        
-        if( pivot_pos == k )
-        {
-            return arr[ pivot_pos ];
-        } else if( pivot_pos > k )
-        {
-            r = pivot_pos - 1;
-        } else {
-            l = pivot_pos + 1;
-        }
-    }
-}
-
-
-void run(std::istream& in, std::ostream& out)
+template< typename T >
+class Array
 {
-    int n = 0;
-    in >> n;
+public:
+    Array();
+    Array( int _bufferSize );
+    ~Array();
 
-    int* arr = new int [n];
-    for (int i = 0; i < n; i++)
-        in >> arr[i];
+    T& operator[]( int i );
+    const T& operator[]( int i ) const;
+
+    void Add( T element );
+
+    T Last() const;
+    void DeleteLast();
+
+    bool IsEmpty() const;
+    int Size() const;
+private:
+    T * buffer;
+    int bufferSize;
+    int actualSize;
+
+    void upsize();
+};
+
+template< typename T >
+Array<T>::Array() : buffer( nullptr ), bufferSize( 0 ), actualSize( 0 ) {}
+
+template< typename T >
+Array<T>::Array( int _bufferSize ) : buffer( nullptr ), bufferSize( _bufferSize ), actualSize( 0 )
+{
+    bufferSize = _bufferSize;
+    T* newBuffer = new T[ bufferSize ];
+
+    delete[] buffer;
+    buffer = newBuffer;
+}
+
+template< typename T >
+Array<T>::~Array()
+{
+    delete[] buffer;
+}
+
+template< typename T >
+T& Array<T>::operator[]( int i )
+{
+    return buffer[i];
+}
+
+template< typename T >
+const T& Array<T>::operator[]( int i ) const
+{
+    return buffer[i];
+}
+
+template< typename T >
+void Array<T>::Add( T element )
+{
+    if( actualSize == bufferSize )
+        upsize();
     
-    int k10 = 0.1 * n;
-    int k50 = 0.5 * n;
-    int k90 = 0.9 * n;
+    buffer[ actualSize++ ] = element;
+}
 
-    out << kth_statistics(arr, k10, 0, n - 1) << "\n";
-    out << kth_statistics(arr, k50, 0, n - 1) << "\n";
-    out << kth_statistics(arr, k90, 0, n - 1) << "\n";
+template< typename T >
+T Array<T>::Last() const
+{
+    return buffer[ actualSize - 1 ];
+}
 
-    delete[] arr; 
+template< typename T >
+void Array<T>::DeleteLast()
+{
+    assert( actualSize > 0 );
+    actualSize--;
+}
+
+template< typename T >
+int Array<T>::Size() const
+{
+    return actualSize;
+}
+
+template< typename T >
+bool Array<T>::IsEmpty() const
+{
+    return actualSize == 0;
+}
+
+template< typename T >
+void Array<T>::upsize()
+{
+    bufferSize = ( bufferSize == 0 ) ? 2 : bufferSize * 2;
+    T* newBuffer = new T[ bufferSize ];
+
+    std::copy( buffer, buffer + actualSize, newBuffer );
+
+    delete [] buffer;
+    buffer = newBuffer;
+}
+
+
+void msdSort( Array< std::string >& strings, int start, int n, int pos )
+{
+    if( n <= 1 ) return;
+
+    const int ALPHABET_SIZE = 257;
+    Array< Array< std::string >> buckets( ALPHABET_SIZE );
+
+    for( int i = start; i < start + n; ++i )
+    {
+        unsigned char c = ( pos < strings[i].size() ) ? strings[i][pos] : '\0';
+        buckets[c].Add( strings[i] );
+    }
+
+    int index = start;
+    for( int c = 0; c < ALPHABET_SIZE; ++c )
+    {
+        int bucket_size = buckets[c].Size();
+        if( bucket_size > 0 )
+        {
+            for( int i = 0; i < bucket_size; ++i )
+                strings[index++] = buckets[c][i];
+            
+            if( c > 0 && bucket_size > 1 )
+                msdSort( strings, index - bucket_size, bucket_size, pos + 1 );
+        }
+    }
+}
+
+
+void run( std::istream& in, std::ostream& out )
+{
+    Array< std::string > strings;
+
+    std::string toInput;
+    while (std::cin >> toInput) {
+        strings.Add(toInput);
+    }
+    
+    msdSort( strings, 0, strings.Size(), 0 );
+    
+    for( int i = 0; i < strings.Size(); ++i ) {
+        std::cout << strings[i] << "\n";
+    }
 }
 
 
 void testLogic() {
     {
-        int arr[] = {44};
-        int n = 1;
-        int k10 = 0;
-        int k50 = 0;
-        int k90 = 0;
-        
-        assert(kth_statistics(arr, k10, 0, n - 1) == 44);
-        assert(kth_statistics(arr, k50, 0, n - 1) == 44);
-        assert(kth_statistics(arr, k90, 0, n - 1) == 44 );
+        Array<std::string> empty;
+        msdSort(empty, 0, empty.Size(), 0);
+        assert(empty.Size() == 0);
     }
     {
-        int arr[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-        int n = 10;
-        int k10 = 1;
-        int k50 = 5;
-        int k90 = 9;
-        
-        assert(kth_statistics(arr, k10, 0, n - 1) == 2);
-        assert(kth_statistics(arr, k50, 0, n - 1) == 6);
-        assert(kth_statistics(arr, k90, 0, n - 1) == 10);
+        Array<std::string> identical;
+        identical.Add("zzz");
+        identical.Add("zzz");
+        identical.Add("zzz");
+        msdSort(identical, 0, identical.Size(), 0);
+        assert(identical[0] == "zzz" && identical[1] == "zzz" && identical[2] == "zzz");
     }
     {
-        int arr[] = {5, 3, 9, 1, 7, 2, 8, 4, 6, 0};
-        int n = 10;
-        int k10 = 1;
-        int k50 = 5;
-        int k90 = 9;
-        
-        assert(kth_statistics(arr, k10, 0, n - 1) == 1);
-        assert(kth_statistics(arr, k50, 0, n - 1) == 5);
-        assert(kth_statistics(arr, k90, 0, n - 1) == 9);
+        Array<std::string> normal;
+        normal.Add("banana");
+        normal.Add("apple");
+        normal.Add("cherry");
+        normal.Add("apple");
+        msdSort(normal, 0, normal.Size(), 0);
+        assert(normal[0] == "apple");
+        assert(normal[1] == "apple");
+        assert(normal[2] == "banana");
+        assert(normal[3] == "cherry");
     }
     {
-        int arr[] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
-        int n = 10;
-        int k10 = 1;
-        int k50 = 5;
-        int k90 = 9;
-        
-        assert(kth_statistics(arr, k10, 0, n - 1) == 2);
-        assert(kth_statistics(arr, k50, 0, n - 1) == 2);
-        assert(kth_statistics(arr, k90, 0, n - 1) == 2);
-    }
-    {
-        int arr[] = {5, 3, 8, 1, 9, 2, 7};
-        int n = 7;
-        int k10 = 0;
-        int k50 = 3;
-        int k90 = 6;
-        
-        assert(kth_statistics(arr, k10, 0, n - 1) == 1);
-        assert(kth_statistics(arr, k50, 0, n - 1) == 5);
-        assert(kth_statistics(arr, k90, 0, n - 1) == 9);
+        Array<std::string> diff_length;
+        diff_length.Add("a");
+        diff_length.Add("");
+        diff_length.Add("aaa");
+        diff_length.Add("aa");
+        msdSort(diff_length, 0, diff_length.Size(), 0);
+        assert(diff_length[0] == "");
+        assert(diff_length[1] == "a");
+        assert(diff_length[2] == "aa");
+        assert(diff_length[3] == "aaa");
     }
 }
 
 
-int main( int argc, const char *argv[] )
-{
+int main() {
     run(std::cin, std::cout);
     //testLogic();
+
     return 0;
 }
