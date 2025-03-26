@@ -1,7 +1,7 @@
-all: task6
+all: task7
 
-task6:
-	g++ src/task6.cpp -o bin/task6
+task7:
+	g++ src/task7.cpp -o build/task7
 
 clean:
-	rm -rf bin/task6
+	rm -rf bin/task7
