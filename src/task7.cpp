@@ -25,9 +25,6 @@ public:
 
     void Add( T element );
 
-    T Last() const;
-    void DeleteLast();
-
     bool IsEmpty() const;
     int Size() const;
 private:
@@ -76,19 +73,6 @@ void Array<T>::Add( T element )
         upsize();
     
     buffer[ actualSize++ ] = element;
-}
-
-template< typename T >
-T Array<T>::Last() const
-{
-    return buffer[ actualSize - 1 ];
-}
-
-template< typename T >
-void Array<T>::DeleteLast()
-{
-    assert( actualSize > 0 );
-    actualSize--;
 }
 
 template< typename T >
