@@ -129,6 +129,18 @@ struct ArrayIterator
 };
 
 
+template< typename T, typename Comparator = std::less<T> >
+struct ArrayIteratorComparator
+{
+    Comparator comp;
+
+    bool operator()( const ArrayIterator<T>& a, const ArrayIterator<T>& b ) const
+    {
+        return comp( a.Value(), b.Value() );
+    }
+};
+
+
 template <typename T, typename Comparator = std::less<T>>
 class Heap
 {
@@ -137,14 +149,14 @@ public:
     Heap(Comparator _comp);
     ~Heap();
 
-    void Insert( const ArrayIterator<T>& element );
+    void Insert( const T& element );
 
-    ArrayIterator<T> ExtractMin();
-    ArrayIterator<T> PeekMin() const;
+    T ExtractMin();
+    const T& PeekMin() const;
 
     bool IsEmpty() const;
 private:
-    Array<ArrayIterator<T>> arr;
+    Array<T> arr;
     Comparator comp;
 
     void siftDown( int i );
@@ -163,18 +175,18 @@ Heap<T, Comparator>::~Heap() {}
 
 
 template <typename T, typename Comparator>
-void Heap<T, Comparator>::Insert( const ArrayIterator<T>& element )
+void Heap<T, Comparator>::Insert( const T& element )
 {
     arr.Add( element );
     siftUp( arr.Size() - 1 );
 }
 
 template <typename T, typename Comparator>
-ArrayIterator<T> Heap<T, Comparator>::ExtractMin()
+T Heap<T, Comparator>::ExtractMin()
 {
     assert( !arr.IsEmpty() );
 
-    ArrayIterator<T> result = arr[0];
+    T result = arr[0];
     arr[0] = arr.Last();
     arr.DeleteLast();
 
@@ -185,7 +197,7 @@ ArrayIterator<T> Heap<T, Comparator>::ExtractMin()
 }
 
 template <typename T, typename Comparator>
-ArrayIterator<T> Heap<T, Comparator>::PeekMin() const
+const T& Heap<T, Comparator>::PeekMin() const
 {
     assert( !arr.IsEmpty() );
     return arr[0];
@@ -204,9 +216,9 @@ void Heap< T, Comparator >::siftDown( int i )
 
     int smallest = i;
 
-    if (( left < arr.Size() ) && comp( arr[ left ].Value(), arr[ smallest ].Value() ))
+    if (( left < arr.Size() ) && comp( arr[ left ], arr[ smallest ] ))
         smallest = left;
-    if (( right < arr.Size() ) && comp( arr[ right ].Value(), arr[ smallest ].Value() ))
+    if (( right < arr.Size() ) && comp( arr[ right ], arr[ smallest ] ))
         smallest = right;
     
     if ( smallest != i )
@@ -222,7 +234,7 @@ void Heap< T, Comparator >::siftUp( int index )
     while( index > 0 )
     {
         int parent = ( index - 1 ) / 2;
-        if( comp( arr[ index ].Value(), arr[ parent ].Value() ))
+        if( comp( arr[ index ], arr[ parent ] ))
         {
             std::swap( arr[ index ], arr[ parent ] );
             index = parent;
@@ -232,9 +244,9 @@ void Heap< T, Comparator >::siftUp( int index )
 }
 
 
-template < typename T, typename Comparator >
-Array<T> mergeKSortedArrays( const Array<Array<T>*>& arrays, Comparator comp ) {
-    Heap<T, Comparator> heap( comp );
+template < typename T, typename Comparator = std::less<T> >
+Array<T> mergeKSortedArrays( const Array<Array<T>*>& arrays, Comparator comp = Comparator()) {
+    Heap<ArrayIterator<T>, ArrayIteratorComparator< T, Comparator >> heap(( ArrayIteratorComparator<T, Comparator>{ comp } ));
     Array<T> result;
 
     for( int i = 0; i < arrays.Size(); ++i ) {
