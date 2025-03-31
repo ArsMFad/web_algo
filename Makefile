@@ -1,7 +1,13 @@
-all: task1
+all: task1 task2 task3
 
 task1:
-	g++ src/task1.cpp -o bin/task1
+	g++ src/rk1_task1.cpp -o build/rk1_task1
+
+task2:
+	g++ src/rk1_task2.cpp -o build/rk1_task2
+
+task3:
+	g++ src/rk1_task3.cpp -o build/rk1_task3
 
 clean:
-	rm -rf bin/task1
+	rm -rf build/task1 build/task2 build/task3
