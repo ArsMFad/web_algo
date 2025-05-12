@@ -1,7 +1,7 @@
-all: task_
+all: task3
 
-task_:
-	g++ src/task_.cpp -o build/task_
+task3:
+	g++ src/module_2/task3.cpp -o build/task3
 
 clean:
-	rm -rf build/task1 build/task2 build/task3
+	rm -rf build/task3
